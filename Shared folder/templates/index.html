@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>WSN Real-Time Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .container { width: 90%; max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        canvas { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>📡 Αισθητήρες Κόμβου - Real Time Dashboard</h1>
+        <p>Αυτόματη ανανέωση δεδομένων ανά 5 δευτερόλεπτα</p>
+        <canvas id="sensorChart" width="800" height="400"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('sensorChart').getContext('2d');
+        const sensorChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], 
+                datasets: [
+                    {
+                        label: 'Θερμοκρασία (Raw)',
+                        data: [], 
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        yAxisID: 'y' // Συνδέεται με τον αριστερό άξονα
+                    },
+                    {
+                        label: 'Υγρασία (Raw)',
+                        data: [], 
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        yAxisID: 'y1' // Συνδέεται με τον δεξιό άξονα
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                animation: false, 
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Ώρα' } },
+                    y: { 
+                        type: 'linear', 
+                        display: true, 
+                        position: 'left',
+                        title: { display: true, text: 'Τιμές Θερμοκρασίας' }
+                    },
+                    y1: { 
+                        type: 'linear', 
+                        display: true, 
+                        position: 'right',
+                        title: { display: true, text: 'Τιμές Υγρασίας' },
+                        grid: { drawOnChartArea: false } // Κρύβει τις γραμμές για να μη γίνεται χαμός
+                    }
+                }
+            }
+        });
+
+        function updateData() {
+            fetch('/api/data')
+                .then(response => response.json())
+                .then(data => {
+                    const times = [];
+                    const temps = [];
+                    const hums = [];
+
+                    data.forEach(row => {
+                        const dateObj = new Date(row.Timestamp);
+                        times.push(dateObj.toLocaleTimeString());
+                        temps.push(row.Temp);
+                        hums.push(row.Humidity);
+                    });
+
+                    sensorChart.data.labels = times;
+                    sensorChart.data.datasets[0].data = temps;
+                    sensorChart.data.datasets[1].data = hums;
+                    sensorChart.update();
+                })
+                .catch(err => console.error("Σφάλμα κατά τη λήψη δεδομένων:", err));
+        }
+
+        updateData();
+        setInterval(updateData, 5000);
+    </script>
+</body>
+</html>
