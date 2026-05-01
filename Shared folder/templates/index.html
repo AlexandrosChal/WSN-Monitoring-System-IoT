@@ -80,7 +80,7 @@
 
                     data.forEach(row => {
                         const dateObj = new Date(row.Timestamp);
-                        times.push(dateObj.toLocaleTimeString());
+                        times.push(dateObj.toLocaleTimeString('el-GR', { timeZone: 'Europe/Athens', hour12: false }));
                         temps.push(row.Temp);
                         hums.push(row.Humidity);
                     });
