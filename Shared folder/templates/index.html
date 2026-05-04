@@ -80,7 +80,11 @@
 
                     data.forEach(row => {
                         const dateObj = new Date(row.Timestamp);
-                        times.push(dateObj.toLocaleTimeString('el-GR', { timeZone: 'Europe/Athens', hour12: false }));
+                        dateObj.setUTCHours(dateObj.getUTCHours());
+                        const hh = String(dateObj.getUTCHours()).padStart(2, '0');
+                        const mm = String(dateObj.getUTCMinutes()).padStart(2, '0');
+                        const ss = String(dateObj.getUTCSeconds()).padStart(2, '0');
+                        times.push(hh + ':' + mm + ':' + ss);
                         temps.push(row.Temp);
                         hums.push(row.Humidity);
                     });
